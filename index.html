@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Task Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8'
+                        },
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'bounce-in': 'bounceIn 0.6s ease-out'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .dark .glass-effect {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen transition-all duration-300 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900">
+    <!-- Dark Mode Toggle -->
+    <div class="fixed top-4 right-4 z-50">
+        <button id="darkModeToggle" class="p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 text-gray-600 dark:text-gray-300">
+            <i class="fas fa-moon dark:hidden"></i>
+            <i class="fas fa-sun hidden dark:inline"></i>
+        </button>
+    </div>
+
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header -->
+        <div class="text-center mb-12 animate-fade-in">
+            <h1 class="text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+                Advanced Task Manager
+            </h1>
+            <p class="text-xl text-gray-600 dark:text-gray-300">Organize your life with style and efficiency</p>
+        </div>
+
+        <!-- Quick Stats Dashboard -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="glass-effect rounded-2xl p-6 text-center animate-slide-up">
+                <div class="text-4xl font-bold text-blue-600 dark:text-blue-400" id="totalTasks">0</div>
+                <div class="text-gray-600 dark:text-gray-300 mt-2">
+                    <i class="fas fa-tasks mr-2"></i>Total Tasks
+                </div>
+            </div>
+            <div class="glass-effect rounded-2xl p-6 text-center animate-slide-up" style="animation-delay: 0.1s">
+                <div class="text-4xl font-bold text-green-500" id="completedTasks">0</div>
+                <div class="text-gray-600 dark:text-gray-300 mt-2">
+                    <i class="fas fa-check-circle mr-2"></i>Completed
+                </div>
+            </div>
+            <div class="glass-effect rounded-2xl p-6 text-center animate-slide-up" style="animation-delay: 0.2s">
+                <div class="text-4xl font-bold text-orange-500" id="inProgressTasks">0</div>
+                <div class="text-gray-600 dark:text-gray-300 mt-2">
+                    <i class="fas fa-clock mr-2"></i>In Progress
+                </div>
+            </div>
+            <div class="glass-effect rounded-2xl p-6 text-center animate-slide-up" style="animation-delay: 0.3s">
+                <div class="text-4xl font-bold text-red-500" id="overdueTasks">0</div>
+                <div class="text-gray-600 dark:text-gray-300 mt-2">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Overdue
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Task Form -->
+        <div class="glass-effect rounded-2xl p-8 mb-8 animate-slide-up">
+            <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-6 flex items-center">
+                <i class="fas fa-plus-circle mr-3 text-blue-600"></i>Create New Task
+            </h2>
+            <form id="taskForm" class="space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-edit mr-2"></i>Task Title
+                            </label>
+                            <input 
+                                type="text" 
+                                id="taskInput" 
+                                placeholder="What needs to be done?" 
+                                class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-300 bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
+                                required
+                            >
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-align-left mr-2"></i>Description (Optional)
+                            </label>
+                            <textarea 
+                                id="taskDescription" 
+                                placeholder="Add more details..." 
+                                rows="3"
+                                class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-300 bg-white dark:bg-gray-800 text-gray-800 dark:text-white resize-none"
+                            ></textarea>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                    <i class="fas fa-play mr-2"></i>Start Date
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="startDateInput" 
+                                    class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-300 bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
+                                >
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                    <i class="fas fa-flag-checkered mr-2"></i>Due Date
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="dueDateInput" 
+                                    class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-300 bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
+                                >
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                    <i class="fas fa-exclamation mr-2"></i>Priority
+                                </label>
+                                <select 
+                                    id="priorityInput" 
+                                    class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-300 bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
+                                >
+                                    <option value="low">🟢 Low Priority</option>
+                                    <option value="medium" selected>🟡 Medium Priority</option>
+                                    <option value="high">🔴 High Priority</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                    <i class="fas fa-tag mr-2"></i>Category
+                                </label>
+                                <select 
+                                    id="categoryInput" 
+                                    class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-300 bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
+                                >
+                                    <option value="personal">👤 Personal</option>
+                                    <option value="work">💼 Work</option>
+                                    <option value="health">🏥 Health</option>
+                                    <option value="education">📚 Education</option>
+                                    <option value="shopping">🛒 Shopping</option>
+                                    <option value="other">📋 Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button 
+                    type="submit" 
+                    class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                >
+                    <i class="fas fa-plus mr-2"></i>Create Task
+                </button>
+            </form>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="glass-effect rounded-2xl p-6 mb-8">
+            <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
+                <div class="flex-1 max-w-md">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            placeholder="Search tasks..." 
+                            class="w-full pl-12 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-300 bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
+                        >
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button class="filter-btn active px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300" data-filter="all">
+                        <i class="fas fa-list mr-1"></i>All
+                    </button>
+                    <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300" data-filter="pending">
+                        <i class="fas fa-clock mr-1"></i>Pending
+                    </button>
+                    <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300" data-filter="in-progress">
+                        <i class="fas fa-play mr-1"></i>In Progress
+                    </button>
+                    <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300" data-filter="completed">
+                        <i class="fas fa-check mr-1"></i>Completed
+                    </button>
+                    <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300" data-filter="overdue">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>Overdue
+                    </button>
+                </div>
+                <button 
+                    id="clearCompleted" 
+                    class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300 text-sm font-medium"
+                >
+                    <i class="fas fa-trash mr-1"></i>Clear Completed
+                </button>
+            </div>
+        </div>
+
+        <!-- Task List -->
+        <div class="glass-effect rounded-2xl p-6">
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center">
+                <i class="fas fa-list-ul mr-3 text-blue-600"></i>Your Tasks
+            </h2>
+            
+            <div id="taskList" class="space-y-4">
+                <!-- Tasks will be dynamically added here -->
+            </div>
+            
+            <div id="emptyState" class="text-center py-16 text-gray-500 dark:text-gray-400 hidden">
+                <div class="animate-bounce-in">
+                    <i class="fas fa-clipboard-list text-6xl mb-4 text-gray-300 dark:text-gray-600"></i>
+                    <p class="text-xl font-semibold mb-2">No tasks found</p>
+                    <p class="text-sm">Create your first task to get started on your productivity journey!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AdvancedTaskManager {
+            constructor() {
+                this.tasks = this.loadTasks();
+                this.currentFilter = 'all';
+                this.searchQuery = '';
+                this.initEventListeners();
+                this.initDarkMode();
+                this.renderTasks();
+                this.updateStats();
+            }
+
+            initEventListeners() {
+                // Form submission
+                document.getElementById('taskForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.addTask();
+                });
+
+                // Search functionality
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.searchQuery = e.target.value.toLowerCase();
+                    this.renderTasks();
+                });
+
+                // Clear completed tasks
+                document.getElementById('clearCompleted').addEventListener('click', () => {
+                    this.clearCompleted();
+                });
+
+                // Filter buttons
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.setFilter(e.target.dataset.filter);
+                    });
+                });
+
+                // Dark mode toggle
+                document.getElementById('darkModeToggle').addEventListener('click', () => {
+                    this.toggleDarkMode();
+                });
+            }
+
+            initDarkMode() {
+                const isDark = localStorage.getItem('darkMode') === 'true';
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                }
+            }
+
+            toggleDarkMode() {
+                document.documentElement.classList.toggle('dark');
+                const isDark = document.documentElement.classList.contains('dark');
+                localStorage.setItem('darkMode', isDark);
+            }
+
+            addTask() {
+                const taskInput = document.getElementById('taskInput');
+                const taskDescription = document.getElementById('taskDescription');
+                const startDateInput = document.getElementById('startDateInput');
+                const dueDateInput = document.getElementById('dueDateInput');
+                const priorityInput = document.getElementById('priorityInput');
+                const categoryInput = document.getElementById('categoryInput');
+                
+                const task = {
+                    id: Date.now(),
+                    title: taskInput.value.trim(),
+                    description: taskDescription.value.trim(),
+                    completed: false,
+                    startDate: startDateInput.value,
+                    dueDate: dueDateInput.value,
+                    priority: priorityInput.value,
+                    category: categoryInput.value,
+                    createdAt: new Date().toISOString(),
+                    completedAt: null
+                };
+
+                this.tasks.unshift(task);
+                this.saveTasks();
+                this.renderTasks();
+                this.updateStats();
+                
+                // Clear form
+                taskInput.value = '';
+                taskDescription.value = '';
+                startDateInput.value = '';
+                dueDateInput.value = '';
+                priorityInput.value = 'medium';
+                categoryInput.value = 'personal';
+
+                // Show success animation
+                this.showNotification('Task created successfully!', 'success');
+            }
+
+            toggleTask(id) {
+                const task = this.tasks.find(t => t.id === id);
+                if (task) {
+                    task.completed = !task.completed;
+                    task.completedAt = task.completed ? new Date().toISOString() : null;
+                    this.saveTasks();
+                    this.renderTasks();
+                    this.updateStats();
+                    
+                    const message = task.completed ? 'Task completed! 🎉' : 'Task marked as pending';
+                    this.showNotification(message, task.completed ? 'success' : 'info');
+                }
+            }
+
+            deleteTask(id) {
+                this.tasks = this.tasks.filter(t => t.id !== id);
+                this.saveTasks();
+                this.renderTasks();
+                this.updateStats();
+                this.showNotification('Task deleted', 'error');
+            }
+
+            updateTask(id, field, value) {
+                const task = this.tasks.find(t => t.id === id);
+                if (task) {
+                    task[field] = value;
+                    this.saveTasks();
+                    this.renderTasks();
+                    this.updateStats();
+                }
+            }
+
+            clearCompleted() {
+                const completedCount = this.tasks.filter(t => t.completed).length;
+                this.tasks = this.tasks.filter(t => !t.completed);
+                this.saveTasks();
+                this.renderTasks();
+                this.updateStats();
+                this.showNotification(`${completedCount} completed tasks cleared`, 'info');
+            }
+
+            setFilter(filter) {
+                this.currentFilter = filter;
+                
+                // Update filter buttons
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active', 'bg-blue-600', 'text-white');
+                    btn.classList.add('bg-gray-200', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+                });
+                
+                const activeBtn = document.querySelector(`[data-filter="${filter}"]`);
+                activeBtn.classList.add('active', 'bg-blue-600', 'text-white');
+                activeBtn.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+                
+                this.renderTasks();
+            }
+
+            getFilteredTasks() {
+                let filtered = this.tasks;
+
+                // Apply search filter
+                if (this.searchQuery) {
+                    filtered = filtered.filter(task => 
+                        task.title.toLowerCase().includes(this.searchQuery) ||
+                        task.description.toLowerCase().includes(this.searchQuery) ||
+                        task.category.toLowerCase().includes(this.searchQuery)
+                    );
+                }
+
+                // Apply status filter
+                const now = new Date();
+                now.setHours(0, 0, 0, 0);
+
+                switch (this.currentFilter) {
+                    case 'completed':
+                        return filtered.filter(t => t.completed);
+                    case 'pending':
+                        return filtered.filter(t => !t.completed && !this.isInProgress(t) && !this.isOverdue(t));
+                    case 'in-progress':
+                        return filtered.filter(t => !t.completed && this.isInProgress(t));
+                    case 'overdue':
+                        return filtered.filter(t => !t.completed && this.isOverdue(t));
+                    default:
+                        return filtered;
+                }
+            }
+
+            isInProgress(task) {
+                if (!task.startDate || task.completed) return false;
+                const now = new Date();
+                const startDate = new Date(task.startDate);
+                const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+                
+                return startDate <= now && (!dueDate || now <= dueDate);
+            }
+
+            isOverdue(task) {
+                if (!task.dueDate || task.completed) return false;
+                const now = new Date();
+                now.setHours(23, 59, 59, 999);
+                const dueDate = new Date(task.dueDate);
+                return dueDate < now;
+            }
+
+            getTaskStatus(task) {
+                if (task.completed) return 'completed';
+                if (this.isOverdue(task)) return 'overdue';
+                if (this.isInProgress(task)) return 'in-progress';
+                return 'pending';
+            }
+
+            getPriorityColor(priority) {
+                switch (priority) {
+                    case 'high': return 'text-red-500';
+                    case 'medium': return 'text-yellow-500';
+                    case 'low': return 'text-green-500';
+                    default: return 'text-gray-500';
+                }
+            }
+
+            getCategoryIcon(category) {
+                const icons = {
+                    personal: 'fa-user',
+                    work: 'fa-briefcase',
+                    health: 'fa-heartbeat',
+                    education: 'fa-graduation-cap',
+                    shopping: 'fa-shopping-cart',
+                    other: 'fa-folder'
+                };
+                return icons[category] || 'fa-folder';
+            }
+
+            formatDate(dateString) {
+                if (!dateString) return '';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                });
+            }
+
+            calculateDuration(startDate, endDate) {
+                if (!startDate || !endDate) return '';
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                const diffTime = Math.abs(end - start);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays === 1 ? '1 day' : `${diffDays} days`;
+            }
+
+            renderTasks() {
+                const taskList = document.getElementById('taskList');
+                const emptyState = document.getElementById('emptyState');
+                const filteredTasks = this.getFilteredTasks();
+
+                if (filteredTasks.length === 0) {
+                    taskList.innerHTML = '';
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                emptyState.classList.add('hidden');
+                
+                taskList.innerHTML = filteredTasks.map(task => {
+                    const status = this.getTaskStatus(task);
+                    const priorityColor = this.getPriorityColor(task.priority);
+                    const categoryIcon = this.getCategoryIcon(task.category);
+                    const duration = this.calculateDuration(task.startDate, task.dueDate);
+                    
+                    let statusBadge = '';
+                    switch (status) {
+                        case 'completed':
+                            statusBadge = '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"><i class="fas fa-check mr-1"></i>Completed</span>';
+                            break;
+                        case 'overdue':
+                            statusBadge = '<span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full"><i class="fas fa-exclamation-triangle mr-1"></i>Overdue</span>';
+                            break;
+                        case 'in-progress':
+                            statusBadge = '<span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"><i class="fas fa-play mr-1"></i>In Progress</span>';
+                            break;
+                        default:
+                            statusBadge = '<span class="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full"><i class="fas fa-clock mr-1"></i>Pending</span>';
+                    }
+                    
+                    return `
+                        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-l-4 ${status === 'overdue' ? 'border-red-500' : status === 'completed' ? 'border-green-500' : status === 'in-progress' ? 'border-blue-500' : 'border-gray-300'} animate-slide-up">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <input 
+                                        type="checkbox" 
+                                        ${task.completed ? 'checked' : ''} 
+                                        onchange="taskManager.toggleTask(${task.id})"
+                                        class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 focus:ring-2 transition-all duration-300"
+                                    >
+                                    <div class="flex-1">
+                                        <h3 class="text-lg font-semibold ${task.completed ? 'line-through text-gray-500' : 'text-gray-800 dark:text-white'} mb-1">
+                                            ${task.title}
+                                        </h3>
+                                        ${task.description ? `<p class="text-sm text-gray-600 dark:text-gray-400 mb-2">${task.description}</p>` : ''}
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    ${statusBadge}
+                                    <button 
+                                        onclick="taskManager.deleteTask(${task.id})"
+                                        class="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-300"
+                                        title="Delete task"
+                                    >
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                <div class="flex items-center">
+                                    <i class="fas ${categoryIcon} mr-2"></i>
+                                    <span class="capitalize">${task.category}</span>
+                                </div>
+                                <div class="flex items-center ${priorityColor}">
+                                    <i class="fas fa-flag mr-2"></i>
+                                    <span class="capitalize">${task.priority} Priority</span>
+                                </div>
+                                ${task.startDate ? `
+                                    <div class="flex items-center">
+                                        <i class="fas fa-play mr-2"></i>
+                                        <span>Start: ${this.formatDate(task.startDate)}</span>
+                                    </div>
+                                ` : ''}
+                                ${task.dueDate ? `
+                                    <div class="flex items-center">
+                                        <i class="fas fa-flag-checkered mr-2"></i>
+                                        <span>Due: ${this.formatDate(task.dueDate)}</span>
+                                    </div>
+                                ` : ''}
+                                ${duration ? `
+                                    <div class="flex items-center">
+                                        <i class="fas fa-calendar-alt mr-2"></i>
+                                        <span>Duration: ${duration}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <input 
+                                    type="date" 
+                                    value="${task.startDate || ''}"
+                                    onchange="taskManager.updateTask(${task.id}, 'startDate', this.value)"
+                                    class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                                    placeholder="Start Date"
+                                >
+                                <input 
+                                    type="date" 
+                                    value="${task.dueDate || ''}"
+                                    onchange="taskManager.updateTask(${task.id}, 'dueDate', this.value)"
+                                    class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                                    placeholder="Due Date"
+                                >
+                                <select 
+                                    onchange="taskManager.updateTask(${task.id}, 'priority', this.value)"
+                                    class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                                >
+                                    <option value="low" ${task.priority === 'low' ? 'selected' : ''}>🟢 Low</option>
+                                    <option value="medium" ${task.priority === 'medium' ? 'selected' : ''}>🟡 Medium</option>
+                                    <option value="high" ${task.priority === 'high' ? 'selected' : ''}>🔴 High</option>
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            updateStats() {
+                const total = this.tasks.length;
+                const completed = this.tasks.filter(t => t.completed).length;
+                const inProgress = this.tasks.filter(t => this.isInProgress(t) && !t.completed).length;
+                const overdue = this.tasks.filter(t => this.isOverdue(t)).length;
+
+                document.getElementById('totalTasks').textContent = total;
+                document.getElementById('completedTasks').textContent = completed;
+                document.getElementById('inProgressTasks').textContent = inProgress;
+                document.getElementById('overdueTasks').textContent = overdue;
+            }
+
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `fixed top-20 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white font-medium animate-slide-up ${
+                    type === 'success' ? 'bg-green-500' : 
+                    type === 'error' ? 'bg-red-500' : 
+                    type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
+                }`;
+                notification.textContent = message;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+
+            loadTasks() {
+                const saved = localStorage.getItem('advancedTasks');
+                return saved ? JSON.parse(saved) : [];
+            }
+
+            saveTasks() {
+                localStorage.setItem('advancedTasks', JSON.stringify(this.tasks));
+            }
+        }
+
+        // Initialize the advanced task manager
+        const taskManager = new AdvancedTaskManager();
+
+        // Set default start date to today
+        document.getElementById('startDateInput').value = new Date().toISOString().split('T')[0];
+    </script>
+</body>
+</html>
